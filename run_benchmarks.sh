@@ -8,6 +8,8 @@ TABLE1_DRIVERS="${BCFILES}/table1_drivers_list"
 TABLE2_DRIVERS="${BCFILES}/table2_drivers_list"
 TABLE2_SUBSYSTEMS=${BCFILES}/subsystem_list
 
+TOTAL_MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+
 run_analysis()  {
   DRIVER_LIST=$1
 
@@ -26,6 +28,19 @@ run_analysis()  {
     #echo "Running the analysis in the background (pid ${PID})"
     PIDS[${idx}]=${PID}
     idx=$((${idx}+1))
+
+    # Wait for the analysis to start consuming memory
+    sleep 25
+
+    FREE_MEM=$(grep MemFree /proc/meminfo | awk '{print $2}')
+    PERCENT_FREE=$(echo "${FREE_MEM} * 100 / ${TOTAL_MEM}" | bc)
+
+    # Wait for the existing ones to finish to avoid OOM crashes
+    while [[ ${PERCENT_FREE} < 40 ]]; do
+      sleep 5
+      FREE_MEM=$(grep MemFree /proc/meminfo | awk '{print $2}')
+      PERCENT_FREE=$(echo "${FREE_MEM} * 100 / ${TOTAL_MEM}" | bc)
+    done
     popd > /dev/null
   done < "${DRIVER_LIST}"
 
