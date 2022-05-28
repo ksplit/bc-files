@@ -1,0 +1,10 @@
+net_ethernet/dummy
+net_ethernet/ixgbe
+net_ethernet/alx
+block/null_blk
+edac/sb_edac
+arch_x86/msr
+can-raw
+md/dm-zero
+hwmon/coretemp
+usb/xhci-hcd
